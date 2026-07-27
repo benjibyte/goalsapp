@@ -1,0 +1,40 @@
+* {
+  /* This is for typical global variables like colors, 
+   * fonts, icons, and later a dark theme? */
+  --formColor: #ffffff;
+  --overlayColor: rgba(0, 0, 0, 0.5);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlayColor);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /*Mobile viewport*/
+  height: 100dvh;
+  width: 100dvw;
+}
+
+.form-box {
+  background-color: var(--formColor);
+  width: 90vw;
+  max-width: 400px; /*Most measurements here are relative, 
+                      but this needs to be specific for tablets 
+                      so that there is a fixed scale threshold*/
+  /*Spacing in rem for accesibility*/
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+
+  /*Animation*/
+  opacity: 0;
+  transform: translateY(-20px);
+  transform: opacity 0.5s ease, tranform 0.5s ease;
+}
+
+.form-box.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
