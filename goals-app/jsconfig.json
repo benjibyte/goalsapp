@@ -3,6 +3,7 @@
     "target": "es6",
     "module": "commonjs",
     "baseUrl": "src",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@components/*": ["components/*"],
       "@hooks/*": ["hooks/*"],
