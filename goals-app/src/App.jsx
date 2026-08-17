@@ -4,13 +4,13 @@ import GoalList from './components/GoalList';
 import useGoals from './hooks/useGoals';
 
 const App = () => {
-  const { goals, addGoal, removeGoal } = useGoals();
+  const { goals, addGoal, removeGoal, updateGoal } = useGoals();
 
   return (
     <div className="app">
       <h1>Goals App</h1>
       <GoalForm onAddGoal={addGoal} />
-      <GoalList goals={goals} onRemoveGoal={removeGoal} />
+      <GoalList goals={goals} onDelete={removeGoal} onEdit={updateGoal} />
     </div>
   );
 };
