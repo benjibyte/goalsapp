@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 /**
- * @typedef {{ id: string, title: string }} Goal
+ * @typedef {{ id: string, title: string, completed: boolean }} Goal
  */
 
 const useGoals = () => {
@@ -18,6 +18,7 @@ const useGoals = () => {
         const newGoal = {
             id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
             title: trimmedTitle,
+            completed: false,
         };
 
         setGoals((prevGoals) => [...prevGoals, newGoal]);
@@ -46,11 +47,21 @@ const useGoals = () => {
         );
     };
 
+    /** @param {string} goalId */
+    const toggleGoal = (goalId) => {
+        setGoals((prevGoals) =>
+            prevGoals.map(goal =>
+                goal.id === goalId ? { ...goal, completed: !goal.completed } : goal
+            )
+        );
+    };
+
     return {
         goals,
         addGoal,
         removeGoal,
         updateGoal,
+        toggleGoal,
     };
 };
 

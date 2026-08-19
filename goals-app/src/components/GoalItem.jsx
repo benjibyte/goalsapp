@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const GoalItem = ({ goal, onEdit, onDelete }) => {
+const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
   const [draft, setDraft] = useState(goal.title);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -10,7 +10,15 @@ const GoalItem = ({ goal, onEdit, onDelete }) => {
   };
 
   return (
-    <li className="goal-item">
+    <li className={`goal-item${goal.completed ? ' completed' : ''}`}>
+      <button
+        className="complete-button"
+        onClick={() => onToggle(goal.id)}
+        aria-label={goal.completed ? `Mark ${goal.title} as active` : `Complete ${goal.title}`}
+        title={goal.completed ? 'Mark as active' : 'Complete goal'}
+      >
+        ✓
+      </button>
       {isEditing ? (
         <>
           <input
