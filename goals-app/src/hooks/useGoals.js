@@ -1,8 +1,13 @@
 import { useState } from 'react';
 
-const useGoals = () => {
-    const [goals, setGoals] = useState([]);
+/**
+ * @typedef {{ id: string, title: string }} Goal
+ */
 
+const useGoals = () => {
+    const [goals, setGoals] = useState(/** @type {Goal[]} */ ([]));
+
+    /** @param {string} title */
     const addGoal = (title) => {
         const trimmedTitle = title.trim();
 
@@ -18,10 +23,15 @@ const useGoals = () => {
         setGoals((prevGoals) => [...prevGoals, newGoal]);
     };
 
+    /** @param {string} goalId */
     const removeGoal = (goalId) => {
         setGoals((prevGoals) => prevGoals.filter(goal => goal.id !== goalId));
     };
 
+    /**
+     * @param {string} goalId
+     * @param {string} updatedTitle
+     */
     const updateGoal = (goalId, updatedTitle) => {
         const trimmedTitle = updatedTitle.trim();
 
