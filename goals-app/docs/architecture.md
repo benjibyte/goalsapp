@@ -2,108 +2,73 @@
 
 ## Overview
 
-This project is a lightweight React application for tracking personal goals. The app has a single primary workflow: the user enters a goal, the list renders the saved goals, and each item can be edited or deleted.
+This is a single-page React application. The application state is an in-memory array of goal objects. React re-renders the view when that array changes; there is no router, server API, or persistence layer.
 
-The structure is intentionally simple and matches a beginner-friendly Vite React setup.
+## Component and Data Flow
 
-## Primary Application Flow
+1. `src/main.jsx` imports the stylesheet and mounts `<App />` inside the DOM element with `id="root"`.
+2. `App` calls `useGoals()`, so the hook becomes the single owner of the goal array and its state transitions.
+3. `App` passes `addGoal` to `GoalForm` and passes the goal array plus mutation callbacks to `GoalList`.
+4. `GoalList` derives `activeGoals` and `completedGoals` by filtering the same array. It does not maintain a second completed-goals store.
+5. `GoalItem` renders one goal. Its check button calls `onToggle`, while edit and delete buttons call their corresponding callbacks.
+6. A callback updates the array in `useGoals`; the changed state flows down again as props.
 
-1. The app starts in `src/main.jsx` and mounts the root component.
-2. `src/App.jsx` calls the custom hook `useGoals`.
-3. The hook owns the `goals` state array and exposes functions to add, remove, and update goals.
-4. `GoalForm` sends new goal text into the hook.
-5. `GoalList` receives the list and renders each goal item.
-6. `GoalItem` handles inline editing and deletion for a single goal.
+This is a unidirectional data-flow design: data moves from the hook through `App` into children, and children communicate requested changes upward through callbacks.
 
-## File-by-File Summary
+## Data Model
+
+The JSDoc type in `useGoals.js` describes a goal as:
+
+```js
+{ id: string, title: string, completed: boolean }
+```
+
+New goals receive a generated ID, a trimmed title, and `completed: false`.
+
+## State Transitions
+
+`useGoals` exposes these operations:
+
+- `addGoal(title)`: trims the title, ignores an empty result, and appends a new goal.
+- `removeGoal(goalId)`: creates a new array excluding the matching ID.
+- `updateGoal(goalId, updatedTitle)`: trims the new title and maps the matching goal to a new object with the updated title.
+- `toggleGoal(goalId)`: maps the matching goal to a new object with `completed` inverted.
+
+Each operation uses the functional form of the React state setter. Therefore, the calculation receives the latest previous array, which is important when updates may be queued by React. The array and affected goal objects are replaced rather than mutated in place.
+
+## Responsibilities by File
 
 ### `src/main.jsx`
 
-This file is the mount point for the React app. It renders the application inside `React.StrictMode` and imports the global stylesheet.
+Application entry point. It mounts React using `ReactDOM.createRoot`, wraps `App` in `React.StrictMode`, and loads `index.css`.
 
 ### `src/App.jsx`
 
-`App` is the top-level composition component. It orchestrates the stateful hook and passes the correct handlers down to the form and list components.
+Composition and prop wiring. It does not own the goal data; it connects the hook's operations to the form and list.
 
 ### `src/hooks/useGoals.js`
 
-This is the main state management layer for the app. It maintains the `goals` array in React state and exposes:
-
-- `addGoal(title)`
-- `removeGoal(goalId)`
-- `updateGoal(goalId, updatedTitle)`
-
-The hook uses a generated ID for each goal and trims whitespace before saving to prevent empty values.
+State-management boundary. It owns the array and contains the rules for creating, deleting, editing, and completing goals.
 
 ### `src/components/GoalForm.jsx`
 
-This form accepts a goal string from the user. It validates that the field is not empty and calls `onAddGoal` with the submitted value.
+Controlled form. The input value is stored locally in the form component. On submit, it prevents the browser's default form action, rejects a whitespace-only value, calls `onAddGoal`, and clears the input after a successful submission.
 
 ### `src/components/GoalList.jsx`
 
-This component receives the array of goals and displays either:
-
-- a friendly empty-state message, or
-- a list of `GoalItem` components.
+Derived-view component. It filters the supplied array into active and completed subsets, renders the empty message only when both subsets are empty, and renders completed goals inside a visually faded section.
 
 ### `src/components/GoalItem.jsx`
 
-Each goal item is rendered here. It supports inline editing and deletion. When in edit mode, it shows a text input and save/cancel actions; otherwise it renders the title and edit/delete buttons.
+Single-goal interaction component. It owns only temporary edit state (`draft` and `isEditing`). The committed title, completion status, and deletion remain owned by `useGoals`.
 
 ### `src/utils/goalHelpers.js`
 
-This file contains utility helpers for validation and formatting. The current app uses a minimal validation pattern but does not currently integrate these helpers into the main component flow.
-
-## State Design
-
-The app uses a single source of truth for goals:
-
-- `goals` is stored in `useGoals`
-- child components receive only the data they need
-- mutation functions are passed as callbacks from the parent
-
-This is a simple and clear pattern for a small app and keeps the flow easy to trace.
-
-## Decisions and Trade-offs
-
-### Why a custom hook?
-
-The hook centralizes state logic so the app does not have to keep goal operations inside the top-level component. This makes the code easier to test and reason about.
-
-### Why simple objects for goals?
-
-Each goal is represented as an object with:
-
-- `id`
-- `title`
-
-This is enough for the app's functionality and keeps the data model easy to understand.
-
-### Why inline editing in the item component?
-
-The edit logic lives near the goal row so the user can modify a single item without a separate page or dialog.
-
-## Current Behavior
-
-The app currently supports:
-
-- adding a new goal
-- deleting an existing goal
-- editing the title of an existing goal
-- showing a helpful empty-state message when there are no goals
+Exports `validateGoal` and `formatGoal`, but no current component imports either function. They have no effect on the running application until they are wired into the form or hook.
 
 ## Limitations
 
-The current app is intentionally limited:
-
-- it stores data only in React state, so it resets on refresh
-- it does not persist to localStorage or a backend
-- it does not include categories, completion tracking, or timestamps
-- the helper utilities are present but not yet fully integrated into the main UI flow
-
-## Suggested Next Improvements
-
-- persist goals in `localStorage`
-- add goal completion toggles
-- move validation into a consistent shared utility path with the form and hook
-- add a cleaner visual layout and responsive styling
+- A refresh loses all goals because state is not persisted.
+- Completion is a boolean only; there are no timestamps, progress values, categories, or ordering controls.
+- Validation is limited to rejecting empty or whitespace-only titles. The `validateGoal` helper's 100-character rule is not currently used by the UI.
+- There are no automated tests in the repository.

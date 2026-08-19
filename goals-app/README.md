@@ -1,75 +1,66 @@
 # Goals App
 
-This is a simple Goals application built with React. The app allows users to create, view, edit, and delete their goals. It is designed to be easily integrated with other services in the future.
-
-## Project Structure
-
-```
-goals-app
-├── public
-│   └── robots.txt
-├── src
-│   ├── App.jsx
-│   ├── main.jsx
-│   ├── index.css
-│   ├── components
-│   │   ├── GoalForm.jsx
-│   │   ├── GoalList.jsx
-│   │   └── GoalItem.jsx
-│   ├── hooks
-│   │   └── useGoals.js
-│   └── utils
-│       └── goalHelpers.js
-├── .gitignore
-├── index.html
-├── package.json
-├── vite.config.js
-├── README.md
-└── jsconfig.json
-```
+Goals App is a small client-side React application for practicing state, component composition, and event-driven updates. A user can add a goal, edit its title, delete it, or mark it complete. Completed goals are rendered in a separate faded section and can be returned to the active list.
 
 ## Features
 
-- **Add Goals**: Users can input new goals through a form.
-- **View Goals**: A list of goals is displayed, showing all the user's goals.
-- **Edit Goals**: Users can modify existing goals.
-- **Delete Goals**: Users can remove goals they no longer wish to track.
+- Add non-empty goals through a controlled form.
+- Edit a goal title inline.
+- Delete goals.
+- Toggle completion with the circular check button.
+- Render active and completed goals in separate areas.
+- Show an empty state when no goals exist.
 
-## Getting Started
+## Run Locally
 
-To get started with the Goals app, follow these steps:
+Requirements: Node.js and npm.
 
-1. **Clone the repository**:
-   ```
-   git clone <repository-url>
-   cd goals-app
-   ```
+```sh
+npm install
+npm run dev
+```
 
-2. **Install dependencies**:
-   ```
-   npm install
-   ```
+Vite opens the browser automatically and serves the app at `http://localhost:3000`, as configured in `vite.config.js`.
 
-3. **Run the application**:
-   ```
-   npm run dev
-   ```
+To create a production build:
 
-4. **Open your browser** and navigate to `http://localhost:3000` to see the app in action.
+```sh
+npm run build
+```
 
-## Technologies Used
+The build is written to `dist/`. To preview that build locally, run `npm run serve`.
 
-- React
-- Vite
-- JavaScript
-- CSS
+## Project Structure
 
-## Future Enhancements
+```text
+src/
+   App.jsx                 Composes the form and goal list.
+   main.jsx                Mounts React at the #root element.
+   index.css               Global and component styles.
+   components/
+      GoalForm.jsx          Controlled input and submit validation.
+      GoalList.jsx          Splits goals into active and completed sections.
+      GoalItem.jsx          Displays one goal and its actions.
+   hooks/
+      useGoals.js           Owns goal state and state transitions.
+   utils/
+      goalHelpers.js        Reusable helpers currently not imported by the UI.
+```
 
-- Integration with external APIs for goal tracking.
-- User authentication to save goals across sessions.
-- Enhanced goal analytics and progress tracking.
+## Data Model
 
-## License
+Each goal is represented in memory as:
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+```js
+{
+   id: 'stable identifier',
+   title: 'Read a chapter',
+   completed: false
+}
+```
+
+The `id` distinguishes goals during rendering and update/delete operations. The `completed` boolean determines which section receives the goal.
+
+## Important Limitation
+
+Goals live only in React state. Refreshing the page clears them; there is no localStorage, backend, authentication, or multi-user data layer.

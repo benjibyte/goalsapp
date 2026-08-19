@@ -1,49 +1,51 @@
 # Decision Log
 
-## Purpose of the app
+This document records the current implementation choices and their consequences. It describes decisions visible in the repository, not features that are merely planned.
 
-The app is a simple goal-tracking demo. It exists to show the basic flow of creating, listing, editing, and deleting goals in a React application.
+## Purpose
 
-## Why React + Vite?
+The application is a focused learning example for React state, controlled inputs, callback props, immutable array updates, and derived rendering. Its domain is goal tracking, but it is not yet a production data-management system.
 
-The repo uses Vite because it is lightweight and fast for small frontend projects. It is a good fit for an app that is learning state management and component composition.
+## React and Vite
 
-## Why a custom hook?
+React supplies component rendering and state hooks. Vite supplies the development server and production build. The server is configured to open the browser on port 3000, and the build output goes to `dist/`.
 
-The `useGoals` hook encapsulates state transitions. This keeps the logic out of the presentational components and makes the app easier to reason about.
+## One state owner
 
-## Why store goal objects instead of strings?
+Goal state lives in `useGoals` rather than in `GoalList` or `GoalItem`. This creates one source of truth: the UI cannot accidentally maintain separate active and completed copies. `GoalList` derives those views with `filter`.
 
-The app needs a unique identifier to support delete and update operations. Strings alone would be less reliable because the UI would have no stable key for distinguishing one item from another.
+## Goal objects instead of strings
 
-## Why editing happens inside each item?
+Each goal has an ID because rendering, editing, deletion, and completion toggling need to identify one goal reliably. The `completed` boolean is part of the same object because completion changes the goal's state and therefore its rendered section.
 
-Inline editing keeps the interaction close to the data row and avoids extra screens or route complexity. This fits the minimal app scope.
+## Immutable updates
 
-## Why validate empty input?
+The hook uses `map`, `filter`, array spread, and object spread. These operations create replacement arrays or objects rather than mutating existing state. That makes the state transitions explicit and gives React new references with which to detect updates.
 
-The app prevents blank goals from being saved. This avoids useless entries and makes the UI easier to use.
+## Inline editing
 
-## Why is the helper file not fully used yet?
+Editing is colocated with `GoalItem` because the component needs temporary draft text and edit-mode state for one row. The committed title still belongs to the hook. This separates temporary interaction state from application state.
 
-The project appears to have started with a reusable helper pattern, but the main app flow was simplified directly in the UI and hook. This is common in small demo projects where the fastest working path is prioritized over a strict pattern.
+## Completion interaction
 
-## What is intentionally not included?
+The same circular check button toggles both directions: active to completed and completed back to active. This avoids an irreversible UI action and keeps the operation symmetric. Completed goals remain editable and deletable because completion changes classification, not ownership or existence.
 
-The app deliberately avoids:
+## Validation boundary
 
-- persistence
-- advanced validation
-- external API integration
-- user authentication
-- progress tracking
+The form rejects whitespace-only input for immediate feedback. `useGoals.addGoal` and `updateGoal` also trim and reject blank values, protecting the state layer from invalid callers. The separate `validateGoal` helper is not currently used, so its 100-character rule is not part of the app's behavior.
 
-These are typical next-step features for a real product but are beyond the current minimal demo scope.
+## Deliberate limitations
 
-## Current technical state
+The project currently has no:
 
-The app successfully builds with Vite and the core flow is operating as expected after wiring the state functions and props together.
+- persistence across refreshes
+- backend or external API
+- authentication or user separation
+- automated test suite
+- timestamps, categories, priorities, or progress percentages
 
-## Recommended next change
+These omissions keep the example small, but they also define why the current state model should not be treated as production storage.
 
-The strongest improvement would be persisting goals in `localStorage`, because it makes the app useful without introducing backend complexity.
+## Next architectural step
+
+Persistence is the clearest next addition. `localStorage` would extend the current single-user client-side model with relatively little infrastructure; a backend would be appropriate only when synchronization, authentication, or multi-device access becomes a requirement.

@@ -1,8 +1,10 @@
 # How the Goals App Code Works
 
-## 1. Startup and render process
+This guide follows one piece of data from browser startup through user interaction. The key idea is that `useGoals` owns committed application state, while components either display that state or hold temporary UI state.
 
-The app starts in `src/main.jsx`:
+## 1. Startup
+
+`index.html` provides an empty `<div id="root"></div>`. `src/main.jsx` gives that element to React:
 
 ```jsx
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -12,164 +14,84 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 );
 ```
 
-This tells React to mount the `App` component inside the `#root` element from `index.html`.
+`StrictMode` is a development aid that helps expose certain problems; it does not create a second application state for production users.
 
-## 2. Top-level component structure
+## 2. State is created in the custom hook
 
-In `src/App.jsx`:
-
-```jsx
-const { goals, addGoal, removeGoal, updateGoal } = useGoals();
-```
-
-The app calls `useGoals`, which gives the component access to the list of goals and the functions needed to change it.
-
-Then it renders:
+`App` calls the hook and receives both data and operations:
 
 ```jsx
-<GoalForm onAddGoal={addGoal} />
-<GoalList goals={goals} onDelete={removeGoal} onEdit={updateGoal} />
+const { goals, addGoal, removeGoal, updateGoal, toggleGoal } = useGoals();
 ```
 
-That means the form and list are controlled by the state exposed by the hook.
-
-## 3. State ownership
-
-The actual list of goals is owned by `src/hooks/useGoals.js`.
+The state is an array of objects shaped like:
 
 ```js
-const [goals, setGoals] = useState([]);
+{ id: '...', title: 'Read a chapter', completed: false }
 ```
 
-This is the central data store for the app. All mutations happen through this hook, which keeps the logic in one place.
+The hook's setter is not passed to children. Instead, children receive named callbacks. This preserves the hook as the boundary that defines valid state transitions.
 
-### Add goal
+## 3. Adding a goal
 
-```js
-const addGoal = (title) => {
-  const trimmedTitle = title.trim();
+`GoalForm` is a controlled component: its text input's `value` comes from React state, and `onChange` updates that state. On submit, it prevents the browser's default page navigation and rejects an empty trimmed value.
 
-  if (!trimmedTitle) {
-    return;
-  }
+For a valid submission, it calls `onAddGoal(goal)`. `App` has connected that prop to `addGoal` from the hook. The hook trims the title again, creates an ID using `crypto.randomUUID()` when available or a timestamp fallback, sets `completed` to `false`, and appends the object.
 
-  const newGoal = {
-    id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
-    title: trimmedTitle,
-  };
+The second validation in the hook is intentional defense at the state boundary: callers other than the current form cannot insert a blank title through `addGoal`.
 
-  setGoals((prevGoals) => [...prevGoals, newGoal]);
-};
+## 4. Rendering active and completed goals
+
+`GoalList` does not duplicate the data. It derives two views from one array:
+
+```jsx
+const activeGoals = goals.filter(goal => !goal.completed);
+const completedGoals = goals.filter(goal => goal.completed);
 ```
 
-This prevents empty titles and creates a new goal object with a unique `id`.
+Active goals render in the main list. When at least one goal is completed, completed goals render in a separate `<section className="completed-goals">`. The CSS reduces that section's opacity and the item receives a line-through style.
 
-### Remove goal
+The empty message appears only when both derived arrays are empty. Thus, completing the last active goal does not show the empty state; it shows the completed section instead.
 
-```js
-const removeGoal = (goalId) => {
-  setGoals((prevGoals) => prevGoals.filter(goal => goal.id !== goalId));
-};
-```
+## 5. Completing and restoring a goal
 
-This filters the list and removes the matching goal.
+Every `GoalItem` displays a check button. Its label changes according to state so assistive technology can distinguish “Complete goal” from “Mark as active.” Clicking it calls `onToggle(goal.id)`.
 
-### Update goal
+The hook implements the transition by mapping over the previous array:
 
 ```js
-const updateGoal = (goalId, updatedTitle) => {
-  const trimmedTitle = updatedTitle.trim();
-
-  if (!trimmedTitle) {
-    return;
-  }
-
+const toggleGoal = (goalId) => {
   setGoals((prevGoals) =>
     prevGoals.map(goal =>
-      goal.id === goalId ? { ...goal, title: trimmedTitle } : goal
+      goal.id === goalId ? { ...goal, completed: !goal.completed } : goal
     )
   );
 };
 ```
 
-This updates only the matching item while leaving the rest of the list unchanged.
+The object spread creates a replacement object for the matching goal. No goal object or array is mutated in place. On the next render, `GoalList` places the goal in the other section because the filter result changed.
 
-## 4. Form behavior
+## 6. Editing and deleting
 
-In `src/components/GoalForm.jsx`:
-
-- the component tracks local form state with `useState('')`
-- it validates the value before submission
-- it calls `onAddGoal(goal)` if the value is not empty
-- it clears the field and resets the validation state afterward
-
-This is a simple controlled input pattern in React.
-
-## 5. List rendering
-
-In `src/components/GoalList.jsx`:
-
-```jsx
-{goals.length === 0 ? (
-  <p>No goals yet. Add one above to get started.</p>
-) : (
-  <ul>
-    {goals.map(goal => (
-      <GoalItem key={goal.id} goal={goal} onDelete={onDelete} onEdit={onEdit} />
-    ))}
-  </ul>
-)}
-```
-
-If the list is empty, an empty-state message is shown. Otherwise, each goal is rendered as a `GoalItem`.
-
-## 6. Item editing behavior
-
-In `src/components/GoalItem.jsx`, each item owns a local `draft` state while editing:
+`GoalItem` owns two temporary values:
 
 ```jsx
 const [draft, setDraft] = useState(goal.title);
 const [isEditing, setIsEditing] = useState(false);
 ```
 
-The component switches between two views:
+Normal mode displays the title and action buttons. Edit mode displays the draft input plus Save and Cancel. Save calls `onEdit(goal.id, draft)`; the hook trims and rejects blank titles before replacing only the matching goal. Cancel discards the local draft by leaving the committed goal unchanged.
 
-- normal view: title + edit/delete buttons
-- editing view: text input + save/cancel buttons
+Delete calls `onDelete(goal.id)`. The hook uses `filter` to create an array without that goal.
 
-When save is clicked:
+## 7. Why `key={goal.id}` matters
 
-```jsx
-onEdit(goal.id, draft);
-setIsEditing(false);
-```
+When mapping goals to `GoalItem` components, `GoalList` supplies the stable ID as React's `key`. React uses keys to match items between renders. This is especially important when a goal moves between the active and completed lists.
 
-This calls the update function from the parent state hook.
+## 8. The helper module
 
-## 7. Utility helpers
+`src/utils/goalHelpers.js` exports `validateGoal` and `formatGoal`. Neither function is imported by the current UI, so neither affects runtime behavior. In particular, `validateGoal` contains a 100-character rule that the form does not currently enforce.
 
-`src/utils/goalHelpers.js` provides helper functions for validation and formatting:
+## 9. Persistence and scope
 
-```js
-export const validateGoal = (goal) => { ... };
-export const formatGoal = (goal) => { ... };
-```
-
-These are good reusable utility patterns, but the app is currently not fully wired to use them in the main form/edit flow. They serve as a simple baseline for future consistency checks.
-
-## 8. Why the code works well for a small app
-
-This project keeps responsibilities separated:
-
-- `App` composes the UI
-- `useGoals` owns the data
-- `GoalForm` handles input
-- `GoalList` and `GoalItem` handle rendering and editing
-
-This is a standard React pattern and is easy to extend as the app grows.
-
-## 9. Where the app is still limited
-
-The app does not persist data. That means the list resets whenever the page is refreshed. For a real user-facing app, the next step would be to persist to `localStorage` or a backend.
-
-The project also has underused helpers and a minimal styling layer, which suggests it was created as a learning/app demo rather than a full production feature set.
+The state exists only for the current page session. A full refresh recreates the hook with an empty array. Adding persistence would require a deliberate choice such as synchronizing with `localStorage` or loading and saving through a backend.
