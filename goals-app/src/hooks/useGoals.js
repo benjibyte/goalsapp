@@ -1,14 +1,17 @@
 import { useState } from 'react';
 
 /**
- * @typedef {{ id: string, title: string, completed: boolean }} Goal
+ * @typedef {{ id: string, title: string, description: string, completed: boolean }} Goal
  */
 
 const useGoals = () => {
     const [goals, setGoals] = useState(/** @type {Goal[]} */ ([]));
 
-    /** @param {string} title */
-    const addGoal = (title) => {
+    /**
+     * @param {string} title
+     * @param {string} description
+     */
+    const addGoal = (title, description) => {
         const trimmedTitle = title.trim();
 
         if (!trimmedTitle) {
@@ -18,6 +21,7 @@ const useGoals = () => {
         const newGoal = {
             id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
             title: trimmedTitle,
+            description: (description || '').trim(),
             completed: false,
         };
 
@@ -32,8 +36,9 @@ const useGoals = () => {
     /**
      * @param {string} goalId
      * @param {string} updatedTitle
+    * @param {string} updatedDescription
      */
-    const updateGoal = (goalId, updatedTitle) => {
+    const updateGoal = (goalId, updatedTitle, updatedDescription) => {
         const trimmedTitle = updatedTitle.trim();
 
         if (!trimmedTitle) {
@@ -42,7 +47,9 @@ const useGoals = () => {
 
         setGoals((prevGoals) =>
             prevGoals.map(goal =>
-                goal.id === goalId ? { ...goal, title: trimmedTitle } : goal
+                goal.id === goalId
+                    ? { ...goal, title: trimmedTitle, description: (updatedDescription || '').trim() }
+                    : goal
             )
         );
     };

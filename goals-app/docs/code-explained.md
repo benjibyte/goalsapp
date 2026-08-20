@@ -27,16 +27,21 @@ const { goals, addGoal, removeGoal, updateGoal, toggleGoal } = useGoals();
 The state is an array of objects shaped like:
 
 ```js
-{ id: '...', title: 'Read a chapter', completed: false }
+{
+  id: '...',
+  title: 'Read a chapter',
+  description: 'Read pages 20 through 35.',
+  completed: false
+}
 ```
 
 The hook's setter is not passed to children. Instead, children receive named callbacks. This preserves the hook as the boundary that defines valid state transitions.
 
 ## 3. Adding a goal
 
-`GoalForm` is a controlled component: its text input's `value` comes from React state, and `onChange` updates that state. On submit, it prevents the browser's default page navigation and rejects an empty trimmed value.
+`GoalForm` is a controlled component: its title input and optional description textarea values come from React state, and their `onChange` handlers update that state. On submit, it prevents the browser's default page navigation and rejects an empty trimmed title.
 
-For a valid submission, it calls `onAddGoal(goal)`. `App` has connected that prop to `addGoal` from the hook. The hook trims the title again, creates an ID using `crypto.randomUUID()` when available or a timestamp fallback, sets `completed` to `false`, and appends the object.
+For a valid submission, it calls `onAddGoal(title, description)`. `App` has connected that prop to `addGoal` from the hook. The hook trims both fields, creates an ID using `crypto.randomUUID()` when available or a timestamp fallback, sets `completed` to `false`, and appends the object.
 
 The second validation in the hook is intentional defense at the state boundary: callers other than the current form cannot insert a blank title through `addGoal`.
 
@@ -73,14 +78,15 @@ The object spread creates a replacement object for the matching goal. No goal ob
 
 ## 6. Editing and deleting
 
-`GoalItem` owns two temporary values:
+`GoalItem` owns temporary title and description drafts, plus its edit-mode flag:
 
 ```jsx
 const [draft, setDraft] = useState(goal.title);
+const [draftDescription, setDraftDescription] = useState(goal.description || '');
 const [isEditing, setIsEditing] = useState(false);
 ```
 
-Normal mode displays the title and action buttons. Edit mode displays the draft input plus Save and Cancel. Save calls `onEdit(goal.id, draft)`; the hook trims and rejects blank titles before replacing only the matching goal. Cancel discards the local draft by leaving the committed goal unchanged.
+Normal mode displays the title inside a collapsed native `<details>` element. Opening it reveals the optional description in a smaller font. Edit mode displays inputs for both fields plus Save and Cancel. Save calls `onEdit(goal.id, draft, draftDescription)`; the hook trims both values and rejects blank titles before replacing only the matching goal. Cancel discards the local drafts by leaving the committed goal unchanged.
 
 Delete calls `onDelete(goal.id)`. The hook uses `filter` to create an array without that goal.
 

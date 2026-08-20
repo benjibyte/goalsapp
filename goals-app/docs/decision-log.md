@@ -16,7 +16,7 @@ Goal state lives in `useGoals` rather than in `GoalList` or `GoalItem`. This cre
 
 ## Goal objects instead of strings
 
-Each goal has an ID because rendering, editing, deletion, and completion toggling need to identify one goal reliably. The `completed` boolean is part of the same object because completion changes the goal's state and therefore its rendered section.
+Each goal has an ID because rendering, editing, deletion, and completion toggling need to identify one goal reliably. The `title` is the short primary label, while `description` stores optional supporting detail. The `completed` boolean is part of the same object because completion changes the goal's state and therefore its rendered section.
 
 ## Immutable updates
 
@@ -24,7 +24,11 @@ The hook uses `map`, `filter`, array spread, and object spread. These operations
 
 ## Inline editing
 
-Editing is colocated with `GoalItem` because the component needs temporary draft text and edit-mode state for one row. The committed title still belongs to the hook. This separates temporary interaction state from application state.
+Editing is colocated with `GoalItem` because the component needs temporary title and description drafts plus edit-mode state for one row. The committed title and description still belong to the hook. This separates temporary interaction state from application state.
+
+## Collapsed descriptions
+
+Descriptions are optional and hidden inside a native `<details>` disclosure for each goal. This keeps the list scannable, especially on mobile, while allowing the user to open supporting detail on demand. The description uses a smaller font than the title and remains editable through the item's Edit action.
 
 ## Completion interaction
 

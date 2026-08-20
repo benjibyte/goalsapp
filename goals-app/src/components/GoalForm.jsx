@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 
 const GoalForm = ({ onAddGoal }) => {
-  const [goal, setGoal] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!goal.trim()) {
+    if (!title.trim()) {
       setError('Goal cannot be empty');
       return;
     }
-    onAddGoal(goal);
-    setGoal('');
+    onAddGoal(title, description);
+    setTitle('');
+    setDescription('');
     setError('');
   };
 
@@ -19,9 +21,17 @@ const GoalForm = ({ onAddGoal }) => {
     <form onSubmit={handleSubmit}>
       <input
         type="text"
-        value={goal}
-        onChange={(e) => setGoal(e.target.value)}
-        placeholder="Enter your goal"
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+        placeholder="Goal title"
+        aria-label="Goal title"
+      />
+      <textarea
+        value={description}
+        onChange={(event) => setDescription(event.target.value)}
+        placeholder="Description (optional)"
+        aria-label="Goal description"
+        rows="3"
       />
       <button type="submit">Add Goal</button>
       {error && <p className="error">{error}</p>}

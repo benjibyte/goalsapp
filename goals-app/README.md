@@ -4,7 +4,7 @@ Goals App is a small client-side React application for practicing state, compone
 
 ## Features
 
-- Add non-empty goals through a controlled form.
+- Add non-empty goals with an optional longer description through a controlled form.
 - Edit a goal title inline.
 - Delete goals.
 - Toggle completion with the circular check button.
@@ -55,6 +55,7 @@ Each goal is represented in memory as:
 {
    id: 'stable identifier',
    title: 'Read a chapter',
+   description: 'Read pages 20 through 35 and write down three key ideas.',
    completed: false
 }
 ```

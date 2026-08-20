@@ -20,18 +20,18 @@ This is a unidirectional data-flow design: data moves from the hook through `App
 The JSDoc type in `useGoals.js` describes a goal as:
 
 ```js
-{ id: string, title: string, completed: boolean }
+{ id: string, title: string, description: string, completed: boolean }
 ```
 
-New goals receive a generated ID, a trimmed title, and `completed: false`.
+New goals receive a generated ID, a trimmed title, an optional trimmed description, and `completed: false`.
 
 ## State Transitions
 
 `useGoals` exposes these operations:
 
-- `addGoal(title)`: trims the title, ignores an empty result, and appends a new goal.
+- `addGoal(title, description)`: trims the title, ignores an empty result, trims the optional description, and appends a new goal.
 - `removeGoal(goalId)`: creates a new array excluding the matching ID.
-- `updateGoal(goalId, updatedTitle)`: trims the new title and maps the matching goal to a new object with the updated title.
+- `updateGoal(goalId, updatedTitle, updatedDescription)`: trims the new title and description, then maps the matching goal to a new object with both updated fields.
 - `toggleGoal(goalId)`: maps the matching goal to a new object with `completed` inverted.
 
 Each operation uses the functional form of the React state setter. Therefore, the calculation receives the latest previous array, which is important when updates may be queued by React. The array and affected goal objects are replaced rather than mutated in place.
@@ -52,7 +52,7 @@ State-management boundary. It owns the array and contains the rules for creating
 
 ### `src/components/GoalForm.jsx`
 
-Controlled form. The input value is stored locally in the form component. On submit, it prevents the browser's default form action, rejects a whitespace-only value, calls `onAddGoal`, and clears the input after a successful submission.
+Controlled form. The title input and optional description textarea are stored locally in the form component. On submit, it prevents the browser's default form action, rejects a whitespace-only title, calls `onAddGoal` with both fields, and clears both fields after a successful submission.
 
 ### `src/components/GoalList.jsx`
 
@@ -60,7 +60,7 @@ Derived-view component. It filters the supplied array into active and completed 
 
 ### `src/components/GoalItem.jsx`
 
-Single-goal interaction component. It owns only temporary edit state (`draft` and `isEditing`). The committed title, completion status, and deletion remain owned by `useGoals`.
+Single-goal interaction component. It renders the short title in a collapsed native `<details>` disclosure. The optional description appears in smaller text when the disclosure is opened. Edit mode owns temporary title and description drafts; committed fields, completion status, and deletion remain owned by `useGoals`.
 
 ### `src/utils/goalHelpers.js`
 

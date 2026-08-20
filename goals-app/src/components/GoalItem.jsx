@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 // @ts-ignore
 const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
   const [draft, setDraft] = useState(goal.title);
+  const [draftDescription, setDraftDescription] = useState(goal.description || '');
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSave = () => {
-    onEdit(goal.id, draft);
+    onEdit(goal.id, draft, draftDescription);
     setIsEditing(false);
   };
 
@@ -28,11 +29,20 @@ const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
       </button>
       {isEditing ? (
         <>
-          <input
-            type="text"
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-          />
+          <div className="goal-edit-fields">
+            <input
+              type="text"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              aria-label="Goal title"
+            />
+            <textarea
+              value={draftDescription}
+              onChange={(event) => setDraftDescription(event.target.value)}
+              aria-label="Goal description"
+              rows={3}
+            />
+          </div>
           <div className="goal-item-actions">
             <button onClick={handleSave}>Save</button>
             <button onClick={() => setIsEditing(false)}>Cancel</button>
@@ -40,9 +50,12 @@ const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
         </>
       ) : (
         <>
-          <h3 className={`goal-title${titleLengthClass}`} title={goal.title}>
-            {goal.title}
-          </h3>
+          <details className="goal-details">
+            <summary className={`goal-title${titleLengthClass}`} title={goal.title}>
+              {goal.title}
+            </summary>
+            {goal.description && <p className="goal-description">{goal.description}</p>}
+          </details>
           <div className="goal-item-actions">
             <button onClick={() => setIsEditing(true)}>Edit</button>
             <button onClick={() => onDelete(goal.id)} id="delete-button">
