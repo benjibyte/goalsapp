@@ -86,7 +86,7 @@ const [draftDescription, setDraftDescription] = useState(goal.description || '')
 const [isEditing, setIsEditing] = useState(false);
 ```
 
-Normal mode displays the title inside a collapsed native `<details>` element. Opening it reveals the optional description in a smaller font. Edit mode displays inputs for both fields plus Save and Cancel. Save calls `onEdit(goal.id, draft, draftDescription)`; the hook trims both values and rejects blank titles before replacing only the matching goal. Cancel discards the local drafts by leaving the committed goal unchanged.
+Normal mode displays the title and a Details toggle. Opening it renders the optional description in a smaller-font absolutely positioned card, outside the row's flex flow. Edit mode displays inputs for both fields plus Save and Cancel. Save calls `onEdit(goal.id, draft, draftDescription)`; the hook trims both values and rejects blank titles before replacing only the matching goal. Cancel discards the local drafts by leaving the committed goal unchanged.
 
 Delete calls `onDelete(goal.id)`. The hook uses `filter` to create an array without that goal.
 

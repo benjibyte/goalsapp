@@ -28,7 +28,7 @@ Editing is colocated with `GoalItem` because the component needs temporary title
 
 ## Collapsed descriptions
 
-Descriptions are optional and hidden inside a native `<details>` disclosure for each goal. This keeps the list scannable, especially on mobile, while allowing the user to open supporting detail on demand. The description uses a smaller font than the title and remains editable through the item's Edit action.
+Descriptions are optional and hidden behind a Details toggle for each goal. The opened description is rendered as an absolutely positioned floating card rather than a flex child. This keeps the list scannable, especially on mobile, and prevents expanded text from changing the goal row's width or height. The description uses a smaller font than the title and remains editable through the item's Edit action.
 
 ## Completion interaction
 

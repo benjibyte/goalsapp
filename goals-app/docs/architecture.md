@@ -60,7 +60,7 @@ Derived-view component. It filters the supplied array into active and completed 
 
 ### `src/components/GoalItem.jsx`
 
-Single-goal interaction component. It renders the short title in a collapsed native `<details>` disclosure. The optional description appears in smaller text when the disclosure is opened. Edit mode owns temporary title and description drafts; committed fields, completion status, and deletion remain owned by `useGoals`.
+Single-goal interaction component. It renders the short title with a Details toggle. The optional description appears in smaller text inside an absolutely positioned floating card when opened, so it does not participate in the goal row's flex sizing. Edit mode owns temporary title and description drafts; committed fields, completion status, and deletion remain owned by `useGoals`.
 
 ### `src/utils/goalHelpers.js`
 

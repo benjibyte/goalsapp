@@ -5,6 +5,7 @@ const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
   const [draft, setDraft] = useState(goal.title);
   const [draftDescription, setDraftDescription] = useState(goal.description || '');
   const [isEditing, setIsEditing] = useState(false);
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   const handleSave = () => {
     onEdit(goal.id, draft, draftDescription);
@@ -50,12 +51,29 @@ const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
         </>
       ) : (
         <>
-          <details className="goal-details">
-            <summary className={`goal-title${titleLengthClass}`} title={goal.title}>
-              {goal.title}
-            </summary>
-            {goal.description && <p className="goal-description">{goal.description}</p>}
-          </details>
+          <div className="goal-details">
+            <div className="goal-title-row">
+              <h3 className={`goal-title${titleLengthClass}`} title={goal.title}>
+                {goal.title}
+              </h3>
+              {goal.description && (
+                <button
+                  className="description-toggle"
+                  type="button"
+                  onClick={() => setIsDescriptionOpen(isOpen => !isOpen)}
+                  aria-expanded={isDescriptionOpen}
+                  aria-label={`${isDescriptionOpen ? 'Hide' : 'Show'} description for ${goal.title}`}
+                >
+                  {isDescriptionOpen ? 'Hide' : 'Details'}
+                </button>
+              )}
+            </div>
+            {isDescriptionOpen && goal.description && (
+              <div className="goal-description-card" role="region">
+                {goal.description}
+              </div>
+            )}
+          </div>
           <div className="goal-item-actions">
             <button onClick={() => setIsEditing(true)}>Edit</button>
             <button onClick={() => onDelete(goal.id)} id="delete-button">

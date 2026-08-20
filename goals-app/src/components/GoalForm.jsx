@@ -31,7 +31,7 @@ const GoalForm = ({ onAddGoal }) => {
         onChange={(event) => setDescription(event.target.value)}
         placeholder="Description (optional)"
         aria-label="Goal description"
-        rows="3"
+        rows={3}
       />
       <button type="submit">Add Goal</button>
       {error && <p className="error">{error}</p>}
