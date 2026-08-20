@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+// @ts-ignore
 const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
   const [draft, setDraft] = useState(goal.title);
   const [isEditing, setIsEditing] = useState(false);
@@ -36,7 +37,9 @@ const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
           <h3>{goal.title}</h3>
           <div className="goal-item-actions">
             <button onClick={() => setIsEditing(true)}>Edit</button>
-            <button onClick={() => onDelete(goal.id)}>Delete</button>
+            <button onClick={() => onDelete(goal.id)} id="delete-button">
+              Delete
+            </button>
           </div>
         </>
       )}
