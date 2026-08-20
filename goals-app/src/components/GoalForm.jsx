@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 
+// @ts-ignore
 const GoalForm = ({ onAddGoal }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
 
+  // @ts-ignore
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) {
