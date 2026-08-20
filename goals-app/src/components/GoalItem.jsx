@@ -10,6 +10,12 @@ const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
     setIsEditing(false);
   };
 
+  const titleLengthClass = goal.title.length > 70
+    ? ' goal-title-condensed'
+    : goal.title.length > 40
+      ? ' goal-title-compact'
+      : '';
+
   return (
     <li className={`goal-item${goal.completed ? ' completed' : ''}`}>
       <button
@@ -34,7 +40,9 @@ const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
         </>
       ) : (
         <>
-          <h3>{goal.title}</h3>
+          <h3 className={`goal-title${titleLengthClass}`} title={goal.title}>
+            {goal.title}
+          </h3>
           <div className="goal-item-actions">
             <button onClick={() => setIsEditing(true)}>Edit</button>
             <button onClick={() => onDelete(goal.id)} id="delete-button">
