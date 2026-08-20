@@ -10,9 +10,9 @@ const GoalItem = ({ goal, onEdit, onDelete, onToggle }) => {
     setIsEditing(false);
   };
 
-  const titleLengthClass = goal.title.length > 70
+  const titleLengthClass = goal.title.length > 50
     ? ' goal-title-condensed'
-    : goal.title.length > 40
+    : goal.title.length > 30
       ? ' goal-title-compact'
       : '';
 
