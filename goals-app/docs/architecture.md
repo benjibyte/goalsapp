@@ -2,7 +2,8 @@
 
 ## Overview
 
-This is a single-page, mobile-first React application. Goal and reminder state is held in React and mirrored to a temporary in-memory persistence module. React re-renders the view when either array changes; there is no router, server API, or durable storage.
+This is a single-page, mobile-first React application. Goal and reminder state is held in React and mirrored to a temporary in-memory persistence module. React re-renders the view when either array changes; there is no router, server API, or durable storage. .... 
+*Yet! This app will be implemented into the Discord Resolver Bot for Young Service Missionaries*
 
 ## Component and Data Flow
 
