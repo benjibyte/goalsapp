@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-// @ts-ignore
+// @ts-ignore Benjibyte: because we don't need typescript for this part of the Discord Resolver bot
 const GoalForm = ({ onAddGoal }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
