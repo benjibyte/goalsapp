@@ -11,9 +11,9 @@ import {
 const useGoals = () => {
     const [goals, setGoals] = useState(() => getTemporaryPersistenceSnapshot().goals);
 
-    const updateGoals = (updater) => {
+    const updateGoals = (change) => {
         setGoals((prevGoals) => {
-            const nextGoals = updater(prevGoals);
+            const nextGoals = change(prevGoals);
             updateTemporaryPersistence('goals', nextGoals);
             return nextGoals;
         });
@@ -67,7 +67,8 @@ const useGoals = () => {
     };
 
     /** @param {string} goalId */
-    const toggleGoal = (goalId) => {
+    const toggleGoal = (goalId) => { // This is the function we use to
+                                     // "Check off" a goal.
         updateGoals((prevGoals) =>
             prevGoals.map(goal =>
                 goal.id === goalId ? { ...goal, completed: !goal.completed } : goal
