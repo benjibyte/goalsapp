@@ -41,7 +41,8 @@ h3 {
 }
 
 .app {
-  width: min(calc(100% - 1rem), 44rem);
+  width: min(calc(100% - 2rem), 44rem);
+  margin: 1rem auto;
   min-width: 0;
   max-width: 100%;
 }
@@ -228,10 +229,6 @@ textarea {
 }
 
 @media (max-width: 30rem) {
-  .app {
-    width: calc(100% - 1.5rem);
-  }
-
   .goal-item {
     align-items: flex-start;
     gap: 0.5rem;
