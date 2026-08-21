@@ -1,11 +1,23 @@
 import { useState } from 'react';
+import {
+    getTemporaryPersistenceSnapshot,
+    updateTemporaryPersistence,
+} from '../utils/temporaryPersistence';
 
 /**
  * @typedef {{ id: string, title: string, description: string, completed: boolean }} Goal
  */
 
 const useGoals = () => {
-    const [goals, setGoals] = useState(/** @type {Goal[]} */ ([]));
+    const [goals, setGoals] = useState(() => getTemporaryPersistenceSnapshot().goals);
+
+    const updateGoals = (updater) => {
+        setGoals((prevGoals) => {
+            const nextGoals = updater(prevGoals);
+            updateTemporaryPersistence('goals', nextGoals);
+            return nextGoals;
+        });
+    };
 
     /**
      * @param {string} title
@@ -25,12 +37,12 @@ const useGoals = () => {
             completed: false,
         };
 
-        setGoals((prevGoals) => [...prevGoals, newGoal]);
+        updateGoals((prevGoals) => [...prevGoals, newGoal]);
     };
 
     /** @param {string} goalId */
     const removeGoal = (goalId) => {
-        setGoals((prevGoals) => prevGoals.filter(goal => goal.id !== goalId));
+        updateGoals((prevGoals) => prevGoals.filter(goal => goal.id !== goalId));
     };
 
     /**
@@ -45,7 +57,7 @@ const useGoals = () => {
             return;
         }
 
-        setGoals((prevGoals) =>
+        updateGoals((prevGoals) =>
             prevGoals.map(goal =>
                 goal.id === goalId
                     ? { ...goal, title: trimmedTitle, description: (updatedDescription || '').trim() }
@@ -56,7 +68,7 @@ const useGoals = () => {
 
     /** @param {string} goalId */
     const toggleGoal = (goalId) => {
-        setGoals((prevGoals) =>
+        updateGoals((prevGoals) =>
             prevGoals.map(goal =>
                 goal.id === goalId ? { ...goal, completed: !goal.completed } : goal
             )

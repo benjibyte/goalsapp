@@ -2,13 +2,13 @@
 
 ## Overview
 
-This is a single-page React application. The application state is an in-memory array of goal objects. React re-renders the view when that array changes; there is no router, server API, or persistence layer.
+This is a single-page, mobile-first React application. Goal and reminder state is held in React and mirrored to a temporary in-memory persistence module. React re-renders the view when either array changes; there is no router, server API, or durable storage.
 
 ## Component and Data Flow
 
 1. `src/main.jsx` imports the stylesheet and mounts `<App />` inside the DOM element with `id="root"`.
-2. `App` calls `useGoals()`, so the hook becomes the single owner of the goal array and its state transitions.
-3. `App` passes `addGoal` to `GoalForm` and passes the goal array plus mutation callbacks to `GoalList`.
+2. `App` calls `useGoals()` and `useReminders()`, so each hook owns one collection and its state transitions.
+3. `App` passes each hook's callbacks and collection to the matching form and list components.
 4. `GoalList` derives `activeGoals` and `completedGoals` by filtering the same array. It does not maintain a second completed-goals store.
 5. `GoalItem` renders one goal. Its check button calls `onToggle`, while edit and delete buttons call their corresponding callbacks.
 6. A callback updates the array in `useGoals`; the changed state flows down again as props.
@@ -46,9 +46,9 @@ Application entry point. It mounts React using `ReactDOM.createRoot`, wraps `App
 
 Composition and prop wiring. It does not own the goal data; it connects the hook's operations to the form and list.
 
-### `src/hooks/useGoals.js`
+### `src/hooks/useGoals.js` and `src/hooks/useReminders.js`
 
-State-management boundary. It owns the array and contains the rules for creating, deleting, editing, and completing goals.
+State-management boundaries. They own their arrays, contain the rules for creating, deleting, editing, and completing items, and mirror every update to temporary persistence.
 
 ### `src/components/GoalForm.jsx`
 
@@ -66,9 +66,13 @@ Single-goal interaction component. It renders the short title with a Details tog
 
 Exports `validateGoal` and `formatGoal`, but no current component imports either function. They have no effect on the running application until they are wired into the form or hook.
 
+### `src/utils/temporaryPersistence.js`
+
+Temporary integration boundary. It stores a combined goals/reminders snapshot in memory, supports programmatic reads, replacement, and subscriptions, and emits `goals-app:data-changed` in browsers for an API adapter or other external consumer.
+
 ## Limitations
 
-- A refresh loses all goals because state is not persisted.
+- A refresh loses all goals and reminders because the temporary store is not durable.
 - Completion is a boolean only; there are no timestamps, progress values, categories, or ordering controls.
 - Validation is limited to rejecting empty or whitespace-only titles. The `validateGoal` helper's 100-character rule is not currently used by the UI.
 - There are no automated tests in the repository.
